@@ -25,12 +25,15 @@ client.on('message', message => {
             return
           }
           var output = {
-            "symbol": info.symbol,
-            "current": info.latestPrice,
-            "high": info.high,
-            "low": info.low,
-            "percentChange": info.changePercent * 100 + "%",
-            "volume": info.latestVolume
+            "Symbol": info.symbol,
+            "Company Name": info.companyName,
+            "Current": info.latestPrice,
+            "High": info.high,
+            "Low": info.low,
+            "Open": info.open,
+            "Close": info.close,
+            "Percent Change (1 Day)": info.changePercent * 100 + "%",
+            "Volume": info.latestVolume
           }
           message.channel.send(formatOutput(JSON.stringify(output)));
         });
