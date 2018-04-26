@@ -1,3 +1,4 @@
 {
-  "api_url": "https://api.iextrading.com/1.0/stock/"
+  "stock_api_url": "https://api.iextrading.com/1.0/stock/",
+  "coin_api_url": "https://min-api.cryptocompare.com/data/price?fsym="
 }
