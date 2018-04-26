@@ -17,7 +17,6 @@
   },
   "homepage": "https://github.com/BryanSLam/discord-bot#readme",
   "dependencies": {
-    "discord": "^0.8.2",
     "discord.js": "^11.3.2",
     "request": "^2.85.0"
   }
