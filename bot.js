@@ -50,9 +50,14 @@ client.on('message', message => {
           if (info.Message != undefined) {
             message.channel.send(info.Message);
           } else {
+            var parsedBody = info.RAW[contents[1].toUpperCase()].USD;
             output = {
               "Symbol": contents[1].toUpperCase(),
-              "Price (USD)": info.USD
+              "Current Price (USD)": parsedBody.PRICE,
+              "Open (24 Hours)": parsedBody.OPEN24HOUR,
+              "High (24 Hours)": parsedBody.HIGH24HOUR,
+              "Low (24 Hours)": parsedBody.LOW24HOUR,
+              "Percent Change (24 Hours)": parsedBody.CHANGEPCT24HOUR + "%"
             }
             message.channel.send(formatOutput(JSON.stringify(output)));
           }
