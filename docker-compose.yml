@@ -1,0 +1,16 @@
+---
+version: '3.6'
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.bot
+    command: bash -c "go build -o bin/bot && bin/bot -t ${BOT_TOKEN}"
+    # without values will pull the value from your host ENV of the same name
+    environment:
+      - STOCK_API_URL
+      - COIN_API_URL
+      - ERR_INVALID_CMD
+      - ERR_INVALID_SYM
+    volumes:
+      - .:/go/src/github.com/jonwho/discord-bot
