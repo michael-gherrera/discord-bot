@@ -1,4 +1,4 @@
-# Use this Dockerfile to setup the development environment for api
+# Use this Dockerfile to setup the development environment for bot
 FROM golang:1.10.2-alpine3.7 AS dev
 
 # Install bash shell
@@ -14,12 +14,12 @@ RUN go get github.com/golang/dep/cmd/dep
 
 # Gopkg.toml and Gopkg.lock lists project dependencies
 # These layers will only be re-built when Gopkg files are updated
-COPY Gopkg.lock Gopkg.toml /go/src/github.com/jonwho/discord-bot/
-WORKDIR /go/src/github.com/jonwho/discord-bot/
+COPY Gopkg.lock Gopkg.toml /go/src/discord-bot/
+WORKDIR /go/src/discord-bot/
 # Install library dependencies
 RUN dep ensure -vendor-only
 
 # Copy all project and build it
 # This layer will be rebuilt when ever a file has changed in the project directory
-COPY . /go/src/github.com/jonwho/discord-bot/
+COPY . /go/src/discord-bot/
 RUN go build

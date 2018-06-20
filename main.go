@@ -18,7 +18,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-type Stock struct {
+type stock struct {
 	Quote struct {
 		Symbol        string  `json:"symbol"`
 		CompanyName   string  `json:"companyName"`
@@ -32,7 +32,7 @@ type Stock struct {
 	} `json:"quote"`
 }
 
-type Coin struct {
+type coin struct {
 	Symbol        string
 	Current       string
 	Open          string
@@ -127,7 +127,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 
 			defer resp.Body.Close()
-			stock := Stock{}
+			stock := stock{}
 
 			if err = json.NewDecoder(resp.Body).Decode(&stock); err != nil {
 				s.ChannelMessageSend(m.ChannelID, err.Error())
@@ -162,7 +162,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				return
 			}
 
-			coin := Coin{Symbol: ticker}
+			coin := coin{Symbol: ticker}
 
 			if err = json.NewDecoder(resp.Body).Decode(&coin); err != nil || coin.Response == "Error" {
 				s.ChannelMessageSend(m.ChannelID, err.Error())
@@ -185,8 +185,6 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		} else {
 			s.ChannelMessageSend(m.ChannelID, err_invalid_cmd)
 		}
-	} else {
-		s.ChannelMessageSend(m.ChannelID, err_invalid_cmd)
 	}
 }
 
@@ -246,7 +244,7 @@ func formatCoinJSON(output map[string]string) string {
 	return fmtStr
 }
 
-func (c *Coin) UnmarshalJSON(data []byte) error {
+func (c *coin) UnmarshalJSON(data []byte) error {
 	// auxiliary struct to help map json
 	var aux struct {
 		Display  map[string]interface{}

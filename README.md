@@ -1,4 +1,5 @@
 # discord-bot
+<removed_line>
 fantastic bot made by weenie corp
 
 ## Get it running
