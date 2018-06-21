@@ -13,4 +13,5 @@ services:
       - ERR_INVALID_CMD
       - ERR_INVALID_SYM
     volumes:
-      - .:/go/src/github.com/jonwho/discord-bot
+      - .:/go/src/discord-bot
+    tty: true
