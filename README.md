@@ -1,6 +1,4 @@
 # discord-bot
-<removed_line>
-fantastic bot made by weenie corp
 
 ## Get it running
 * Get your bot token from discord from [here](https://discordapp.com/developers/applications/me).
