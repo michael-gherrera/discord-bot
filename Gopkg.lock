@@ -14,6 +14,12 @@
   version = "v1.2.0"
 
 [[projects]]
+  name = "github.com/tkanos/gonfig"
+  packages = ["."]
+  revision = "e83209aed2d171bab5ffb312a1e630110481cb99"
+  version = "1.0"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
   packages = [
@@ -45,6 +51,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "dfbebd14b5c7d0608935700c7626d6908352e2060f69f4daaf891b2ab03b8c46"
+  inputs-digest = "0efc64bbbbe4696208e15ba31f2e03507e9879ca0023506c998c491cb3be60a0"
   solver-name = "gps-cdcl"
   solver-version = 1

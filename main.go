@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,7 +13,11 @@ import (
 	"strings"
 	"syscall"
 
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
+
 	"github.com/bwmarrin/discordgo"
+	"github.com/tkanos/gonfig"
 )
 
 type stock struct {
@@ -42,25 +44,31 @@ type coin struct {
 	Response      string
 }
 
+type botConfig struct {
+	StockAPIURL           string
+	CoinAPIURL            string
+	InvalidCommandMessage string
+	InvalidSymbolMessage  string
+}
+
 // Variables to initialize
 var (
-	token           string
-	stock_api_url   string
-	coin_api_url    string
-	err_invalid_cmd string
-	err_invalid_sym string
+	token  string
+	config botConfig
 )
 
-// Run the program with `go run main.go -t <token>`
-// flag.Parse() will assign to token var
 func init() {
+	// Run the program with `go run main.go -t <token>`
+	// flag.Parse() will assign to token var
 	flag.StringVar(&token, "t", "", "Bot Token")
 	flag.Parse()
 
-	stock_api_url = os.Getenv("STOCK_API_URL")
-	coin_api_url = os.Getenv("COIN_API_URL")
-	err_invalid_cmd = os.Getenv("ERR_INVALID_CMD")
-	err_invalid_sym = os.Getenv("ERR_INVALID_SYM")
+	// Use gonfig to fetch the config variables from config.json
+	err := gonfig.GetConf("config.json", &config)
+	if err != nil {
+		fmt.Println("error fetching config values", err)
+		return
+	}
 }
 
 func main() {
@@ -110,11 +118,11 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		if action, _ := regexp.MatchString("(?i)^!stock$", slice[0]); action {
 			ticker := slice[1]
-			tickerUrl := stock_api_url + ticker + "/batch?types=quote"
+			tickerURL := config.StockAPIURL + ticker + "/batch?types=quote"
 
-			fmt.Println("The stock url is: ", tickerUrl)
+			fmt.Println("The stock url is: ", tickerURL)
 
-			resp, err := http.Get(tickerUrl)
+			resp, err := http.Get(tickerURL)
 
 			if err != nil {
 				s.ChannelMessageSend(m.ChannelID, err.Error())
@@ -122,7 +130,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 
 			if resp.StatusCode != 200 {
-				s.ChannelMessageSend(m.ChannelID, err_invalid_sym)
+				s.ChannelMessageSend(m.ChannelID, config.InvalidSymbolMessage)
 				return
 			}
 
@@ -151,11 +159,11 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSend(m.ChannelID, outputJSON)
 		} else if action, _ := regexp.MatchString("(?i)^!coin$", slice[0]); action {
 			ticker := strings.ToUpper(slice[1])
-			coinUrl := coin_api_url + ticker + "&tsyms=USD"
+			coinURL := config.CoinAPIURL + ticker + "&tsyms=USD"
 
-			fmt.Println("The coin url is: ", coinUrl)
+			fmt.Println("The coin url is: ", coinURL)
 
-			resp, err := http.Get(coinUrl)
+			resp, err := http.Get(coinURL)
 
 			if err != nil {
 				s.ChannelMessageSend(m.ChannelID, err.Error())
@@ -183,7 +191,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSend(m.ChannelID, outputJSON)
 			defer resp.Body.Close()
 		} else {
-			s.ChannelMessageSend(m.ChannelID, err_invalid_cmd)
+			s.ChannelMessageSend(m.ChannelID, config.InvalidCommandMessage)
 		}
 	}
 }
