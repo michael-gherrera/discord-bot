@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -9,40 +8,12 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
-	"strconv"
 	"strings"
 	"syscall"
-
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/tkanos/gonfig"
 )
-
-type stock struct {
-	Quote struct {
-		Symbol        string  `json:"symbol"`
-		CompanyName   string  `json:"companyName"`
-		Current       float32 `json:"latestPrice"`
-		High          float32 `json:"high"`
-		Low           float32 `json:"low"`
-		Open          float32 `json:"open"`
-		Close         float32 `json:"close"`
-		PercentChange float32 `json:"changePercent"`
-		Volume        int32   `json:"latestVolume"`
-	} `json:"quote"`
-}
-
-type coin struct {
-	Symbol        string
-	Current       string
-	Open          string
-	High          string
-	Low           string
-	PercentChange string
-	Response      string
-}
 
 type botConfig struct {
 	StockAPIURL           string
@@ -142,21 +113,26 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				return
 			}
 
-			output := map[string]string{
-				"Symbol":           stock.Quote.Symbol,
-				"Company Name":     stock.Quote.CompanyName,
-				"Current":          fmt.Sprintf("%#v", stock.Quote.Current),
-				"High":             fmt.Sprintf("%#v", stock.Quote.High),
-				"Low":              fmt.Sprintf("%#v", stock.Quote.Low),
-				"Open":             fmt.Sprintf("%#v", stock.Quote.Open),
-				"Close":            fmt.Sprintf("%#v", stock.Quote.Close),
-				"Change % (1 day)": fmt.Sprintf("%#v", stock.Quote.PercentChange*100) + " %",
-				"Volume":           fmt.Sprintf("%#v", stock.Quote.Volume),
+			s.ChannelMessageSend(m.ChannelID, stock.outputJSON())
+		} else if action, _ := regexp.MatchString("(?i)^!er$", slice[0]); action {
+			ticker := strings.ToUpper(slice[1])
+			tickerURL := config.StockAPIURL + ticker + "/earnings"
+
+			fmt.Println("The stock earnings url is: ", tickerURL)
+
+			resp, err := http.Get(tickerURL)
+
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, err.Error())
+				return
 			}
 
-			outputJSON := formatStockJSON(output)
+			if resp.StatusCode != 200 {
+				s.ChannelMessageSend(m.ChannelID, config.InvalidSymbolMessage)
+				return
+			}
 
-			s.ChannelMessageSend(m.ChannelID, outputJSON)
+			defer resp.Body.Close()
 		} else if action, _ := regexp.MatchString("(?i)^!coin$", slice[0]); action {
 			ticker := strings.ToUpper(slice[1])
 			coinURL := config.CoinAPIURL + ticker + "&tsyms=USD"
@@ -177,102 +153,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				return
 			}
 
-			output := map[string]string{
-				"Symbol":              ticker,
-				"Current Price (USD)": coin.Current,
-				"Open (24 Hours)":     coin.Open,
-				"High (24 Hours)":     coin.High,
-				"Low (24 Hours)":      coin.Low,
-				"Change % (24 Hours)": coin.PercentChange,
-			}
-
-			outputJSON := formatCoinJSON(output)
-
-			s.ChannelMessageSend(m.ChannelID, outputJSON)
+			s.ChannelMessageSend(m.ChannelID, coin.outputJSON())
 			defer resp.Body.Close()
 		} else {
 			s.ChannelMessageSend(m.ChannelID, config.InvalidCommandMessage)
 		}
 	}
-}
-
-func formatStockJSON(output map[string]string) string {
-	stringOrder := []string{
-		"Symbol",
-		"Company Name",
-		"Current",
-		"High",
-		"Low",
-		"Open",
-		"Close",
-		"Change % (1 day)",
-		"Volume",
-	}
-
-	printer := message.NewPrinter(language.English)
-	fmtStr := "```\n"
-
-	for _, k := range stringOrder {
-		if k == "Volume" {
-			i, _ := strconv.Atoi(output[k])
-			fmtStr += printer.Sprintf("%-17s %d\n", k, i)
-		} else {
-			fmtStr += printer.Sprintf("%-17s %-20s\n", k, output[k])
-		}
-	}
-
-	fmtStr += "```\n"
-
-	return fmtStr
-}
-
-func formatCoinJSON(output map[string]string) string {
-	stringOrder := []string{
-		"Symbol",
-		"Current Price (USD)",
-		"Open (24 Hours)",
-		"High (24 Hours)",
-		"Low (24 Hours)",
-		"Change % (24 Hours)",
-	}
-
-	fmtStr := "```\n"
-
-	for _, k := range stringOrder {
-		if k == "Change % (24 Hours)" {
-			f, _ := strconv.ParseFloat(output[k], 64)
-			fmtStr += fmt.Sprintf("%-20s %.2f %%\n", k, f)
-		} else {
-			fmtStr += fmt.Sprintf("%-20s %-20s\n", k, output[k])
-		}
-	}
-
-	fmtStr += "```\n"
-
-	return fmtStr
-}
-
-func (c *coin) UnmarshalJSON(data []byte) error {
-	// auxiliary struct to help map json
-	var aux struct {
-		Display  map[string]interface{}
-		Response string
-	}
-
-	dec := json.NewDecoder(bytes.NewReader(data))
-	if err := dec.Decode(&aux); err != nil {
-		return fmt.Errorf("decode coin: %v", err)
-	}
-
-	if aux.Response == "Error" {
-		return fmt.Errorf("could not find coin: %v", c.Symbol)
-	}
-
-	c.Current = aux.Display[c.Symbol].(map[string]interface{})["USD"].(map[string]interface{})["PRICE"].(string)
-	c.Open = aux.Display[c.Symbol].(map[string]interface{})["USD"].(map[string]interface{})["OPEN24HOUR"].(string)
-	c.High = aux.Display[c.Symbol].(map[string]interface{})["USD"].(map[string]interface{})["HIGH24HOUR"].(string)
-	c.Low = aux.Display[c.Symbol].(map[string]interface{})["USD"].(map[string]interface{})["LOW24HOUR"].(string)
-	c.PercentChange = aux.Display[c.Symbol].(map[string]interface{})["USD"].(map[string]interface{})["CHANGEPCT24HOUR"].(string)
-
-	return nil
 }
