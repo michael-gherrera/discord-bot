@@ -40,7 +40,7 @@ func init() {
 	if token == "" {
 		token = os.Getenv("BOT_TOKEN")
 	}
-	fmt.Println(token)
+
 	// Use gonfig to fetch the config variables from config.json
 	err := gonfig.GetConf("config.json", &config)
 	if err != nil {
