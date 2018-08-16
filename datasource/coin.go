@@ -1,4 +1,4 @@
-package main
+package datasource
 
 import (
 	"bytes"
@@ -7,7 +7,8 @@ import (
 	"strconv"
 )
 
-type coin struct {
+// Coin represents the object used to represent cryptocurrency tickers
+type Coin struct {
 	Symbol        string
 	Current       string
 	Open          string
@@ -17,7 +18,7 @@ type coin struct {
 	Response      string
 }
 
-func (c *coin) outputJSON() string {
+func (c *Coin) OutputJSON() string {
 	stringOrder := []string{
 		"Symbol",
 		"Current Price (USD)",
@@ -45,7 +46,7 @@ func (c *coin) outputJSON() string {
 	return fmtStr
 }
 
-func (c *coin) UnmarshalJSON(data []byte) error {
+func (c *Coin) UnmarshalJSON(data []byte) error {
 	// auxiliary struct to help map json
 	var aux struct {
 		Display  map[string]interface{}
@@ -70,7 +71,7 @@ func (c *coin) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (c *coin) outputMap() map[string]string {
+func (c *Coin) outputMap() map[string]string {
 	return map[string]string{
 		"Symbol":              c.Symbol,
 		"Current Price (USD)": c.Current,

@@ -1,13 +1,15 @@
-package main
+package datasource
 
 import (
 	"fmt"
+	"strconv"
+
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
-	"strconv"
 )
 
-type stock struct {
+// Stock represents the object used to represent stock tickers
+type Stock struct {
 	Quote struct {
 		Symbol        string  `json:"symbol"`
 		CompanyName   string  `json:"companyName"`
@@ -21,7 +23,7 @@ type stock struct {
 	} `json:"quote"`
 }
 
-func (s *stock) outputJSON() string {
+func (s *Stock) OutputJSON() string {
 	stringOrder := []string{
 		"Symbol",
 		"Company Name",
@@ -53,7 +55,7 @@ func (s *stock) outputJSON() string {
 	return fmtStr
 }
 
-func (s *stock) outputMap() map[string]string {
+func (s *Stock) outputMap() map[string]string {
 	return map[string]string{
 		"Symbol":           s.Quote.Symbol,
 		"Company Name":     s.Quote.CompanyName,

@@ -11,6 +11,8 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/BryanSLam/discord-bot/datasource"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/tkanos/gonfig"
 )
@@ -34,6 +36,11 @@ func init() {
 	flag.StringVar(&token, "t", "", "Bot Token")
 	flag.Parse()
 
+	//If no value was provided from flag look for env var BOT_TOKEN
+	if token == "" {
+		token = os.Getenv("BOT_TOKEN")
+	}
+	fmt.Println(token)
 	// Use gonfig to fetch the config variables from config.json
 	err := gonfig.GetConf("config.json", &config)
 	if err != nil {
@@ -91,8 +98,6 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			ticker := slice[1]
 			tickerURL := config.StockAPIURL + ticker + "/batch?types=quote"
 
-			fmt.Println("The stock url is: ", tickerURL)
-
 			resp, err := http.Get(tickerURL)
 
 			if err != nil {
@@ -106,19 +111,17 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 
 			defer resp.Body.Close()
-			stock := stock{}
+			stock := datasource.Stock{}
 
 			if err = json.NewDecoder(resp.Body).Decode(&stock); err != nil {
 				s.ChannelMessageSend(m.ChannelID, err.Error())
 				return
 			}
 
-			s.ChannelMessageSend(m.ChannelID, stock.outputJSON())
+			s.ChannelMessageSend(m.ChannelID, stock.OutputJSON())
 		} else if action, _ := regexp.MatchString("(?i)^!er$", slice[0]); action {
 			ticker := strings.ToUpper(slice[1])
 			tickerURL := config.StockAPIURL + ticker + "/earnings"
-
-			fmt.Println("The stock earnings url is: ", tickerURL)
 
 			resp, err := http.Get(tickerURL)
 
@@ -137,8 +140,6 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			ticker := strings.ToUpper(slice[1])
 			coinURL := config.CoinAPIURL + ticker + "&tsyms=USD"
 
-			fmt.Println("The coin url is: ", coinURL)
-
 			resp, err := http.Get(coinURL)
 
 			if err != nil {
@@ -146,14 +147,14 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				return
 			}
 
-			coin := coin{Symbol: ticker}
+			coin := datasource.Coin{Symbol: ticker}
 
 			if err = json.NewDecoder(resp.Body).Decode(&coin); err != nil || coin.Response == "Error" {
 				s.ChannelMessageSend(m.ChannelID, err.Error())
 				return
 			}
 
-			s.ChannelMessageSend(m.ChannelID, coin.outputJSON())
+			s.ChannelMessageSend(m.ChannelID, coin.OutputJSON())
 			defer resp.Body.Close()
 		} else {
 			s.ChannelMessageSend(m.ChannelID, config.InvalidCommandMessage)
