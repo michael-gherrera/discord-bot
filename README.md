@@ -7,3 +7,7 @@
 * Install go dependencies with `dep ensure`.
 * Run `docker-compose up`
 * Done!
+
+## Development
+* Do not modify the `Gopkg.lock` directly!
+* Add new package with `dep ensure -add <path/to/pkg>` which will update `Gopkg.*` for you.
