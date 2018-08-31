@@ -1,6 +1,4 @@
 {
-  "StockAPIURL": "https://api.iextrading.com/1.0/stock/",
   "CoinAPIURL": "https://min-api.cryptocompare.com/data/pricemultifull?fsyms=",
-  "InvalidCommandMessage": "Invalid Command",
-  "InvalidSymbolMessage": "Invalid Symbol"
+  "InvalidCommandMessage": "Invalid Command"
 }

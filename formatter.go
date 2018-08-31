@@ -49,3 +49,45 @@ func formatQuote(quote *iex.Quote) string {
 
 	return fmtStr
 }
+
+func formatEarnings(earnings *iex.Earnings) string {
+	stringOrder := []string{
+		"Symbol",
+		"Actual EPS",
+		"Estimated EPS",
+		"EPS delta",
+		"Announce Time",
+		"Fiscal Start Date",
+		"Fiscal End Date",
+		"Fiscal Period",
+	}
+
+	if len(earnings.Earnings) == 0 {
+		return "No earnings to report for " + earnings.Symbol
+	}
+
+	recentEarnings := earnings.Earnings[0]
+
+	outputMap := map[string]string{
+		"Symbol":            earnings.Symbol,
+		"Actual EPS":        fmt.Sprintf("%#v", recentEarnings.ActualEPS),
+		"Estimated EPS":     fmt.Sprintf("%#v", recentEarnings.EstimatedEPS),
+		"EPS delta":         fmt.Sprintf("%#v", recentEarnings.EPSSurpriseDollar),
+		"Announce Time":     recentEarnings.AnnounceTime,
+		"Fiscal Start Date": recentEarnings.FiscalEndDate,
+		"Fiscal End Date":   recentEarnings.EPSReportDate,
+		"Fiscal Period":     recentEarnings.FiscalPeriod,
+		"Year Ago EPS":      fmt.Sprintf("%#v", recentEarnings.YearAgo),
+	}
+
+	printer := message.NewPrinter(language.English)
+	fmtStr := "```\n"
+
+	for _, k := range stringOrder {
+		fmtStr += printer.Sprintf("%-17s %-20s\n", k, outputMap[k])
+	}
+
+	fmtStr += "```\n"
+
+	return fmtStr
+}

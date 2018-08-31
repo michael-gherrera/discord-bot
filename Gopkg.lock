@@ -23,7 +23,7 @@
   branch = "master"
   name = "github.com/jonwho/go-iex"
   packages = ["."]
-  revision = "1a55fa9ab77255dddfc3f8006440952bc90aacc2"
+  revision = "002a2721c218715e730266cac71c5a05cb2cefd4"
 
 [[projects]]
   name = "github.com/tkanos/gonfig"

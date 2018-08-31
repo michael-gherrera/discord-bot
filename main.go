@@ -19,10 +19,8 @@ import (
 )
 
 type botConfig struct {
-	StockAPIURL           string
 	CoinAPIURL            string
 	InvalidCommandMessage string
-	InvalidSymbolMessage  string
 }
 
 // Variables to initialize
@@ -101,7 +99,6 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		if action, _ := regexp.MatchString("(?i)^!stock$", slice[0]); action {
 			ticker := slice[1]
-
 			quote, err := iexClient.Quote(ticker, true)
 
 			if err != nil {
@@ -113,22 +110,17 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 			s.ChannelMessageSend(m.ChannelID, outputJSON)
 		} else if action, _ := regexp.MatchString("(?i)^!er$", slice[0]); action {
-			ticker := strings.ToUpper(slice[1])
-			tickerURL := config.StockAPIURL + ticker + "/earnings"
-
-			resp, err := http.Get(tickerURL)
+			ticker := slice[1]
+			earnings, err := iexClient.Earnings(ticker)
 
 			if err != nil {
 				s.ChannelMessageSend(m.ChannelID, err.Error())
 				return
 			}
 
-			if resp.StatusCode != 200 {
-				s.ChannelMessageSend(m.ChannelID, config.InvalidSymbolMessage)
-				return
-			}
+			outputJSON := formatEarnings(earnings)
 
-			defer resp.Body.Close()
+			s.ChannelMessageSend(m.ChannelID, outputJSON)
 		} else if action, _ := regexp.MatchString("(?i)^!coin$", slice[0]); action {
 			ticker := strings.ToUpper(slice[1])
 			coinURL := config.CoinAPIURL + ticker + "&tsyms=USD"
