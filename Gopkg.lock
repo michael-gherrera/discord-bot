@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/BryanSLam/discord-bot"
   packages = ["datasource"]
-  revision = "85d38a4ae63d871df64a8fa9770ef716ebe793bb"
+  revision = "dc69362e649a4d6ae5eee215cfe04cc224c84b5e"
 
 [[projects]]
   name = "github.com/bwmarrin/discordgo"
@@ -23,7 +23,7 @@
   branch = "master"
   name = "github.com/jonwho/go-iex"
   packages = ["."]
-  revision = "002a2721c218715e730266cac71c5a05cb2cefd4"
+  revision = "21797dee8a9c061a71f06b4819c515e4391752a4"
 
 [[projects]]
   name = "github.com/tkanos/gonfig"

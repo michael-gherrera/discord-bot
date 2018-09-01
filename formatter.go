@@ -6,6 +6,7 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 	"strconv"
+	"strings"
 )
 
 func formatQuote(quote *iex.Quote) string {
@@ -78,6 +79,14 @@ func formatEarnings(earnings *iex.Earnings) string {
 		"Fiscal End Date":   recentEarnings.EPSReportDate,
 		"Fiscal Period":     recentEarnings.FiscalPeriod,
 		"Year Ago EPS":      fmt.Sprintf("%#v", recentEarnings.YearAgo),
+	}
+
+	if strings.ToLower(outputMap["Announce Time"]) == "bto" {
+		outputMap["Announce Time"] = "Before Trading Open"
+	} else if strings.ToLower(outputMap["Announce Time"]) == "amc" {
+		outputMap["Announce Time"] = "After Market Close"
+	} else if strings.ToLower(outputMap["Announce Time"]) == "dmt" {
+		outputMap["Announce Time"] = "During Market Trading"
 	}
 
 	printer := message.NewPrinter(language.English)
