@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/BryanSLam/discord-bot"
   packages = ["datasource"]
-  revision = "fe84ce50fedb00071a8637996c0f7c45d1fc3287"
+  revision = "dc69362e649a4d6ae5eee215cfe04cc224c84b5e"
 
 [[projects]]
   name = "github.com/bwmarrin/discordgo"
@@ -18,6 +18,12 @@
   packages = ["."]
   revision = "3ff3320c2a1756a3691521efc290b4701575147c"
   version = "v1.3.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/jonwho/go-iex"
+  packages = ["."]
+  revision = "21797dee8a9c061a71f06b4819c515e4391752a4"
 
 [[projects]]
   name = "github.com/tkanos/gonfig"
@@ -34,7 +40,7 @@
     "poly1305",
     "salsa20/salsa"
   ]
-  revision = "614d502a4dac94afa3a6ce146bd1736da82514c6"
+  revision = "182538f80094b6a8efaade63a8fd8e0d9d5843dd"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -58,6 +64,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1c784c97d49e07d82efeaade63f154ad949252d2608afcfea7743ea2beb3de29"
+  inputs-digest = "f02b299fd5ca495b6875b49535ebdb73a39797eff8da6fa51bd4986c987ddffc"
   solver-name = "gps-cdcl"
   solver-version = 1
