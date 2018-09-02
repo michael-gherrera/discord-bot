@@ -12,22 +12,22 @@ import (
 	"syscall"
 
 	"github.com/BryanSLam/discord-bot/datasource"
+	iex "github.com/jonwho/go-iex"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/tkanos/gonfig"
 )
 
 type botConfig struct {
-	StockAPIURL           string
 	CoinAPIURL            string
 	InvalidCommandMessage string
-	InvalidSymbolMessage  string
 }
 
 // Variables to initialize
 var (
-	token  string
-	config botConfig
+	token     string
+	config    botConfig
+	iexClient *iex.Client
 )
 
 func init() {
@@ -36,10 +36,13 @@ func init() {
 	flag.StringVar(&token, "t", "", "Bot Token")
 	flag.Parse()
 
-	//If no value was provided from flag look for env var BOT_TOKEN
+	// If no value was provided from flag look for env var BOT_TOKEN
 	if token == "" {
 		token = os.Getenv("BOT_TOKEN")
 	}
+
+	// Initialize iexClient with new client
+	iexClient = iex.NewClient()
 
 	// Use gonfig to fetch the config variables from config.json
 	err := gonfig.GetConf("config.json", &config)
@@ -96,46 +99,28 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		if action, _ := regexp.MatchString("(?i)^!stock$", slice[0]); action {
 			ticker := slice[1]
-			tickerURL := config.StockAPIURL + ticker + "/batch?types=quote"
-
-			resp, err := http.Get(tickerURL)
+			quote, err := iexClient.Quote(ticker, true)
 
 			if err != nil {
 				s.ChannelMessageSend(m.ChannelID, err.Error())
 				return
 			}
 
-			if resp.StatusCode != 200 {
-				s.ChannelMessageSend(m.ChannelID, config.InvalidSymbolMessage)
-				return
-			}
+			outputJSON := formatQuote(quote)
 
-			defer resp.Body.Close()
-			stock := datasource.Stock{}
-
-			if err = json.NewDecoder(resp.Body).Decode(&stock); err != nil {
-				s.ChannelMessageSend(m.ChannelID, err.Error())
-				return
-			}
-
-			s.ChannelMessageSend(m.ChannelID, stock.OutputJSON())
+			s.ChannelMessageSend(m.ChannelID, outputJSON)
 		} else if action, _ := regexp.MatchString("(?i)^!er$", slice[0]); action {
-			ticker := strings.ToUpper(slice[1])
-			tickerURL := config.StockAPIURL + ticker + "/earnings"
-
-			resp, err := http.Get(tickerURL)
+			ticker := slice[1]
+			earnings, err := iexClient.Earnings(ticker)
 
 			if err != nil {
 				s.ChannelMessageSend(m.ChannelID, err.Error())
 				return
 			}
 
-			if resp.StatusCode != 200 {
-				s.ChannelMessageSend(m.ChannelID, config.InvalidSymbolMessage)
-				return
-			}
+			outputJSON := formatEarnings(earnings)
 
-			defer resp.Body.Close()
+			s.ChannelMessageSend(m.ChannelID, outputJSON)
 		} else if action, _ := regexp.MatchString("(?i)^!coin$", slice[0]); action {
 			ticker := strings.ToUpper(slice[1])
 			coinURL := config.CoinAPIURL + ticker + "&tsyms=USD"
