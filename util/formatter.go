@@ -1,15 +1,16 @@
-package main
+package util
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+
 	iex "github.com/jonwho/go-iex"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
-	"strconv"
-	"strings"
 )
 
-func formatQuote(quote *iex.Quote) string {
+func FormatQuote(quote *iex.Quote) string {
 	stringOrder := []string{
 		"Symbol",
 		"Company Name",
@@ -51,7 +52,7 @@ func formatQuote(quote *iex.Quote) string {
 	return fmtStr
 }
 
-func formatEarnings(earnings *iex.Earnings) string {
+func FormatEarnings(earnings *iex.Earnings) string {
 	stringOrder := []string{
 		"Symbol",
 		"Actual EPS",

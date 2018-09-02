@@ -12,6 +12,7 @@ import (
 	"syscall"
 
 	"github.com/BryanSLam/discord-bot/datasource"
+	"github.com/BryanSLam/discord-bot/util"
 	iex "github.com/jonwho/go-iex"
 
 	"github.com/bwmarrin/discordgo"
@@ -106,7 +107,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				return
 			}
 
-			outputJSON := formatQuote(quote)
+			outputJSON := util.FormatQuote(quote)
 
 			s.ChannelMessageSend(m.ChannelID, outputJSON)
 		} else if action, _ := regexp.MatchString("(?i)^!er$", slice[0]); action {
@@ -118,7 +119,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				return
 			}
 
-			outputJSON := formatEarnings(earnings)
+			outputJSON := util.FormatEarnings(earnings)
 
 			s.ChannelMessageSend(m.ChannelID, outputJSON)
 		} else if action, _ := regexp.MatchString("(?i)^!coin$", slice[0]); action {
