@@ -11,6 +11,7 @@
 * Get your bot token from discord from [here](https://discordapp.com/developers/applications/me).
 * Create a `.env` file with `BOT_TOKEN=<your_token>`.
 * Install the dependencies
+    * Verify you've enabled go modules by setting to your environment variables `GO111MODULE=on`
     * Run `go mod download` to install dependencies to your local cache.
     * Or run `go mod vendor` to install dependencies to a vendor folder in the project.
 * Verify dependencies are installed with `go mod verify`
