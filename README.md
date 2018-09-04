@@ -15,5 +15,5 @@
     * Run `go mod download` to install dependencies to your local cache.
     * Or run `go mod vendor` to install dependencies to a vendor folder in the project.
 * Verify dependencies are installed with `go mod verify`
-* Run `docker-compose up`
+* Run `docker-compose build` then `docker-compose up`
 * Done!
