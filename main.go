@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -45,12 +44,6 @@ func init() {
 
 	// Initialize iexClient with new client
 	iexClient = iex.NewClient()
-
-	chart, errr := iexClient.Chart("ADBE", "7d")
-	if errr != nil {
-		log.Print(errr)
-		return
-	}
 
 	// Use gonfig to fetch the config variables from config.json
 	err := gonfig.GetConf("config.json", &config)

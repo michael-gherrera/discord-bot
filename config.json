@@ -1,4 +1,5 @@
 {
   "CoinAPIURL": "https://min-api.cryptocompare.com/data/pricemultifull?fsyms=",
-  "InvalidCommandMessage": "Invalid Command"
+  "InvalidCommandMessage": "Invalid Command",
+  "DefaultChartFileName": "output.png"
 }
