@@ -16,6 +16,7 @@ import (
 	iex "github.com/jonwho/go-iex"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/go-redis/redis"
 	"github.com/tkanos/gonfig"
 )
 
@@ -26,9 +27,10 @@ type botConfig struct {
 
 // Variables to initialize
 var (
-	token     string
-	config    botConfig
-	iexClient *iex.Client
+	token       string
+	config      botConfig
+	iexClient   *iex.Client
+	redisClient *redis.Client
 )
 
 func init() {
@@ -44,6 +46,8 @@ func init() {
 
 	// Initialize iexClient with new client
 	iexClient = iex.NewClient()
+
+	initRedisClient()
 
 	// Use gonfig to fetch the config variables from config.json
 	err := gonfig.GetConf("config.json", &config)
@@ -104,6 +108,19 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 			if err != nil {
 				s.ChannelMessageSend(m.ChannelID, err.Error())
+
+				rds, iexErr := iexClient.RefDataSymbols()
+				if iexErr != nil {
+					s.ChannelMessageSend(m.ChannelID, iexErr.Error())
+				}
+
+				fuzzySymbols := util.FuzzySearch(ticker, rds.Symbols)
+
+				if len(fuzzySymbols) > 0 {
+					fuzzySymbols = fuzzySymbols[:len(fuzzySymbols)%10]
+					outputJSON := util.FormatFuzzySymbols(fuzzySymbols)
+					s.ChannelMessageSend(m.ChannelID, outputJSON)
+				}
 				return
 			}
 
@@ -146,4 +163,13 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSend(m.ChannelID, config.InvalidCommandMessage)
 		}
 	}
+}
+
+func initRedisClient() {
+	redisClient = redis.NewClient(&redis.Options{
+		Addr: "redis:6379",
+	})
+
+	pong, err := redisClient.Ping().Result()
+	fmt.Println(pong, err)
 }
