@@ -2,7 +2,9 @@ module github.com/BryanSLam/discord-bot
 
 require (
 	github.com/bwmarrin/discordgo v0.18.0
+	github.com/go-redis/redis v6.14.1+incompatible
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
+	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/gorilla/websocket v1.3.0 // indirect
 	github.com/jonwho/go-iex v0.0.0-20180901051812-21797dee8a9c
 	github.com/tkanos/gonfig v0.0.0-20180712192135-f9275a01b19e
