@@ -64,28 +64,28 @@ func Soundex(s string) string {
 
 	s = strings.ToUpper(s)
 
-	r := string(s[0])
-	p := s[0]
+	soundexValue := string(s[0])
+	adjacentChar := s[0]
 
-	for i := 1; i < len(s) && len(r) < 4; i++ {
-		c := s[i]
+	for i := 1; i < len(s) && len(soundexValue) < 4; i++ {
+		currChar := s[i]
 
-		if (c < 'A' || c > 'Z') || (c == p) {
+		if (currChar < 'A' || currChar > 'Z') || (currChar == adjacentChar) {
 			continue
 		}
 
-		p = c
+		adjacentChar = currChar
 
-		if n, ok := m[c]; ok {
-			r += n
+		if soundexWeight, ok := m[currChar]; ok {
+			soundexValue += soundexWeight
 		}
 	}
 
-	for i := len(r); i < 4; i++ {
-		r += "0"
+	for i := len(soundexValue); i < 4; i++ {
+		soundexValue += "0"
 	}
 
-	return r
+	return soundexValue
 }
 
 func FuzzySearch(ticker string, symbols []iex.SymbolDTO) []iex.SymbolDTO {

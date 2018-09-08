@@ -47,7 +47,10 @@ func init() {
 	// Initialize iexClient with new client
 	iexClient = iex.NewClient()
 
-	initRedisClient()
+	// Initialize redisClient with new client
+	redisClient = redis.NewClient(&redis.Options{
+		Addr: "redis:6379",
+	})
 
 	// Use gonfig to fetch the config variables from config.json
 	err := gonfig.GetConf("config.json", &config)
@@ -163,13 +166,4 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSend(m.ChannelID, config.InvalidCommandMessage)
 		}
 	}
-}
-
-func initRedisClient() {
-	redisClient = redis.NewClient(&redis.Options{
-		Addr: "redis:6379",
-	})
-
-	pong, err := redisClient.Ping().Result()
-	fmt.Println(pong, err)
 }
