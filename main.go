@@ -15,7 +15,7 @@ import (
 	"github.com/BryanSLam/discord-bot/datasource"
 	"github.com/BryanSLam/discord-bot/util"
 	"github.com/robfig/cron"
-	"github.com/discord-bot/commands"
+	"github.com/BryanSLam/discord-bot/commands"
 	iex "github.com/jonwho/go-iex"
 
 	"github.com/bwmarrin/discordgo"
