@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"log"
+	"time"
 
 	"github.com/go-redis/redis"
 )
@@ -19,11 +19,12 @@ func NewReminder(url string) Reminder {
 		storeurl string
 		client   *redis.Client
 	)
+	//For mock testing
 	if url != "" {
 		storeurl = url
 	} else {
 		//Replace with the config from the charts PR
-		storeurl = "localhost:9200"
+		storeurl = "localhost:6380"
 	}
 	client = redis.NewClient(&redis.Options{
 		Addr:     storeurl,
@@ -39,13 +40,11 @@ func NewReminder(url string) Reminder {
 //done when the message was recieved and the date should be in the form **/**/**
 //Append the reminder to the existing list if it exists, if not create a new list and add it
 func (r *Reminder) Add(message string, date string) error {
-	var val string
 
-	val, err := r.Client.Get(date).Result()
-	if err != nil {
-		log.Println("error when getting %s %v", date, err)
-		return err
-	}
+	// val, err := r.Client.Get(date).Result()
+	// if err != nil {
+	// 	return err
+	// }
 
 	//Might err if its nil, if not we need a nil check here
 	// if val != nil {
@@ -54,8 +53,26 @@ func (r *Reminder) Add(message string, date string) error {
 
 	// }
 
-	r.Client.Set(date, message)
+	untilDate, err := time.Parse("01/02/06", date)
+	if err != nil {
+		return err
+	}
+
+	//Might need to add a buffer for the duration that the redis entry exists so we have time to get the value and output reminder
+	timeUntil := time.Until(untilDate) + 1
+	err = r.Client.Set(date, message, timeUntil).Err()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (r *Reminder) Get()
+// Get will run on a daily cron job to fetch the raw message from the redish cache and send to the parser to be formatted before
+// being broadcasted.  The expected key is the current date
+func (r *Reminder) Get(date string) (string, error) {
+	output, err := r.Client.Get(date).Result()
+	if err != nil {
+		return "", err
+	}
+	return output, nil
+}
