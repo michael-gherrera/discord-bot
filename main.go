@@ -12,12 +12,11 @@ import (
 	"syscall"
 
 	"github.com/BryanSLam/discord-bot/datasource"
-	"github.com/BryanSLam/discord-bot/commands"
 	"github.com/BryanSLam/discord-bot/util"
+	"github.com/discord-bot/commands"
 	iex "github.com/jonwho/go-iex"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/go-redis/redis"
 	"github.com/tkanos/gonfig"
 )
 
@@ -31,8 +30,7 @@ var (
 	token       string
 	config      botConfig
 	iexClient   *iex.Client
-	redisClient *redis.Client
-	reminder  commands.Reminder
+	reminderClient    commands.Reminder
 )
 
 func init() {
@@ -49,10 +47,8 @@ func init() {
 	// Initialize iexClient with new client
 	iexClient = iex.NewClient()
 
-	// Initialize redisClient with new client
-	redisClient = redis.NewClient(&redis.Options{
-		Addr: "redis:6379",
-	})
+	// Initalize new reminder goroutine
+	reminderClient = commands.NewReminder("")
 
 	// Use gonfig to fetch the config variables from config.json
 	err := gonfig.GetConf("config.json", &config)
@@ -104,7 +100,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, "pong!")
 	}
 
-	if match, _ := regexp.MatchString("![a-zA-Z]+ [a-zA-Z]+", m.Content); match {
+	if match, _ := regexp.MatchString("![a-zA-Z]+ [a-zA-Z\"]+ [0-9/]*", m.Content); match {
 		slice := strings.Split(m.Content, " ")
 
 		if action, _ := regexp.MatchString("(?i)^!stock$", slice[0]); action {
@@ -144,6 +140,33 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			outputJSON := util.FormatEarnings(earnings)
 
 			s.ChannelMessageSend(m.ChannelID, outputJSON)
+		} else if action, _ := regexp.MatchString("(?i)^!remindme$", slice[0]); action {
+			messageArr := strings.Split(m.Content, "\"")
+			if len(messageArr) != 3 {
+				s.ChannelMessageSend(m.ChannelID, "Reminder messages must be surrounded by quotes \"{message}\" ")
+				return
+			}
+			message := messageArr[1]
+			date := slice[len(slice) - 1]
+			match, _ := regexp.MatchString("(0?[1-9]|1[012])/(0?[1-9]|[12][0-9]|3[01])/(\\d\\d)", date)
+			if match == false {
+				s.ChannelMessageSend(m.ChannelID, "Invalid date given loser")
+				return
+			}
+			err := reminderClient.Add(message, date)
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, err.Error())
+				return
+			}
+			output, err := reminderClient.Get(date)
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, err.Error())
+				return
+			}
+
+			for _, reminder := range output {
+				s.ChannelMessageSend(m.ChannelID, reminder)
+			}
 		} else if action, _ := regexp.MatchString("(?i)^!coin$", slice[0]); action {
 			ticker := strings.ToUpper(slice[1])
 			coinURL := config.CoinAPIURL + ticker + "&tsyms=USD"

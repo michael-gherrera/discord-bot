@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -40,18 +42,21 @@ func NewReminder(url string) Reminder {
 //done when the message was recieved and the date should be in the form **/**/**
 //Append the reminder to the existing list if it exists, if not create a new list and add it
 func (r *Reminder) Add(message string, date string) error {
-
-	// val, err := r.Client.Get(date).Result()
-	// if err != nil {
-	// 	return err
-	// }
-
-	//Might err if its nil, if not we need a nil check here
-	// if val != nil {
-	// 	val = val.append(message)
-	// } else {
-
-	// }
+	var (
+		sb  strings.Builder
+		val string
+	)
+	val, err := r.Client.Get(date).Result()
+	if err != nil {
+		if err.Error() != "redis: nil" {
+			return err
+		}
+	}
+	if val != "" {
+		sb.WriteString(val)
+		sb.WriteString("::")
+	}
+	sb.WriteString(message)
 
 	untilDate, err := time.Parse("01/02/06", date)
 	if err != nil {
@@ -60,19 +65,21 @@ func (r *Reminder) Add(message string, date string) error {
 
 	//Might need to add a buffer for the duration that the redis entry exists so we have time to get the value and output reminder
 	timeUntil := time.Until(untilDate) + 1
-	err = r.Client.Set(date, message, timeUntil).Err()
+	err = r.Client.Set(date, sb.String(), timeUntil).Err()
 	if err != nil {
+		fmt.Println("Add set error")
 		return err
 	}
 	return nil
 }
 
-// Get will run on a daily cron job to fetch the raw message from the redish cache and send to the parser to be formatted before
+// Get will run on a daily cron job to fetch the raw messages from the redis cache and send to the parser to be formatted before
 // being broadcasted.  The expected key is the current date
-func (r *Reminder) Get(date string) (string, error) {
-	output, err := r.Client.Get(date).Result()
+func (r *Reminder) Get(date string) ([]string, error) {
+	messages, err := r.Client.Get(date).Result()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
+	output := strings.Split(messages, "::")
 	return output, nil
 }
