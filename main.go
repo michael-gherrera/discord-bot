@@ -10,9 +10,11 @@ import (
 	"regexp"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/BryanSLam/discord-bot/datasource"
 	"github.com/BryanSLam/discord-bot/util"
+	"github.com/robfig/cron"
 	"github.com/discord-bot/commands"
 	iex "github.com/jonwho/go-iex"
 
@@ -75,6 +77,20 @@ func main() {
 		fmt.Println("error opening connection,", err)
 		return
 	}
+
+	// 5 AM everyday Monday - Friday
+	go func() {
+		c := cron.New()
+		c.AddFunc("0 5 * * 1-5", func() {
+			fmt.Println("test")
+			err := reminderRoutine(dg)
+			if err != nil {
+				fmt.Println(err)
+			}
+		})
+		c.Start()
+
+	}()
 
 	// Wait here until CTRL-C or other term signal is received.
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
@@ -146,11 +162,18 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				s.ChannelMessageSend(m.ChannelID, "Reminder messages must be surrounded by quotes \"{message}\" ")
 				return
 			}
-			message := m.Author.Mention() + ": " + messageArr[1]
+			// We store the person who sent the message as well as the channel id into the redis cache so we know where and who to contact later
+			message := m.ChannelID + "~*" + m.Author.Mention() + ": " + messageArr[1]
 			date := slice[len(slice) - 1]
 			match, _ := regexp.MatchString("(0?[1-9]|1[012])/(0?[1-9]|[12][0-9]|3[01])/(\\d\\d)", date)
 			if match == false {
 				s.ChannelMessageSend(m.ChannelID, "Invalid date given loser")
+				return
+			}
+
+			dateCheck, _ := ime.Parse("01/02/06", date)
+			if time.Until(dateCheck) < 0 {
+				s.ChannelMessageSend(m.ChannelID, "Date has already passed ya fuck")
 				return
 			}
 
@@ -159,15 +182,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				s.ChannelMessageSend(m.ChannelID, err.Error())
 				return
 			}
-			output, err := reminderClient.Get(date)
-			if err != nil {
-				s.ChannelMessageSend(m.ChannelID, err.Error())
-				return
-			}
-
-			for _, reminder := range output {
-				s.ChannelMessageSend(m.ChannelID, reminder)
-			}
+			s.ChannelMessageSend(m.ChannelID, "Reminder Set!")
 		} else if action, _ := regexp.MatchString("(?i)^!coin$", slice[0]); action {
 			ticker := strings.ToUpper(slice[1])
 			coinURL := config.CoinAPIURL + ticker + "&tsyms=USD"
@@ -192,4 +207,18 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSend(m.ChannelID, config.InvalidCommandMessage)
 		}
 	}
+}
+
+// Function run during the daily reminder check
+func reminderRoutine(s *discordgo.Session) error {
+	output, err := reminderClient.Get(time.Now().Format("01/02/06"))
+	if err != nil {
+		return err
+	}
+	for _, reminder := range output {
+		cacheEntry := strings.Split(reminder, "~*")
+		channel := cacheEntry[0]
+		s.ChannelMessageSend(channel, cacheEntry[1])
+	}
+	return nil
 }

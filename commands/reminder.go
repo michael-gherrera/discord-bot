@@ -78,7 +78,10 @@ func (r *Reminder) Add(message string, date string) error {
 func (r *Reminder) Get(date string) ([]string, error) {
 	messages, err := r.Client.Get(date).Result()
 	if err != nil {
-		return nil, err
+		if err.Error() != "redis: nil" {
+			return nil, err
+		}
+		return nil, nil
 	}
 	output := strings.Split(messages, "::")
 
