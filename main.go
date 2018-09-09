@@ -146,13 +146,14 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				s.ChannelMessageSend(m.ChannelID, "Reminder messages must be surrounded by quotes \"{message}\" ")
 				return
 			}
-			message := messageArr[1]
+			message := m.Author.Mention() + ": " + messageArr[1]
 			date := slice[len(slice) - 1]
 			match, _ := regexp.MatchString("(0?[1-9]|1[012])/(0?[1-9]|[12][0-9]|3[01])/(\\d\\d)", date)
 			if match == false {
 				s.ChannelMessageSend(m.ChannelID, "Invalid date given loser")
 				return
 			}
+
 			err := reminderClient.Add(message, date)
 			if err != nil {
 				s.ChannelMessageSend(m.ChannelID, err.Error())

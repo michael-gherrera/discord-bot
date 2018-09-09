@@ -81,5 +81,8 @@ func (r *Reminder) Get(date string) ([]string, error) {
 		return nil, err
 	}
 	output := strings.Split(messages, "::")
+
+	//Delete the entries in the redis cache after it's gotten in case the duration doesn't expire
+	r.Client.Del(date)
 	return output, nil
 }
