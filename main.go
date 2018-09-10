@@ -12,11 +12,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/BryanSLam/discord-bot/commands"
 	"github.com/BryanSLam/discord-bot/datasource"
 	"github.com/BryanSLam/discord-bot/util"
-	"github.com/robfig/cron"
-	"github.com/BryanSLam/discord-bot/commands"
 	iex "github.com/jonwho/go-iex"
+	"github.com/robfig/cron"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/tkanos/gonfig"
@@ -29,10 +29,10 @@ type botConfig struct {
 
 // Variables to initialize
 var (
-	token       string
-	config      botConfig
-	iexClient   *iex.Client
-	reminderClient    commands.Reminder
+	token          string
+	config         botConfig
+	iexClient      *iex.Client
+	reminderClient commands.Reminder
 )
 
 func init() {
@@ -164,18 +164,21 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 			// We store the person who sent the message as well as the channel id into the redis cache so we know where and who to contact later
 			message := m.ChannelID + "~*" + m.Author.Mention() + ": " + messageArr[1]
-			date := slice[len(slice) - 1]
+			date := slice[len(slice)-1]
 			match, _ := regexp.MatchString("(0?[1-9]|1[012])/(0?[1-9]|[12][0-9]|3[01])/(\\d\\d)", date)
 			if match == false {
 				s.ChannelMessageSend(m.ChannelID, "Invalid date given loser")
 				return
 			}
 
-			dateCheck, _ := ime.Parse("01/02/06", date)
-			if time.Until(dateCheck) < 0 {
-				s.ChannelMessageSend(m.ChannelID, "Date has already passed ya fuck")
-				return
-			}
+			// Commenting out the date check for now, weird behavior where you get blocked for
+			// Setting a reminder for the next day
+
+			// dateCheck, _ := time.Parse("01/02/06", date)
+			// if time.Until(dateCheck) < 0 {
+			// 	s.ChannelMessageSend(m.ChannelID, "Date has already passed ya fuck")
+			// 	return
+			// }
 
 			err := reminderClient.Add(message, date)
 			if err != nil {
