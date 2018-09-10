@@ -38,9 +38,9 @@ func NewReminder(url string) Reminder {
 	}
 }
 
-//Add adds the new reminder as an entry into the redis table, we assume validation is
-//done when the message was recieved and the date should be in the form **/**/**
-//Append the reminder to the existing list if it exists, if not create a new list and add it
+// Add adds the new reminder as an entry into the redis table, we assume validation is
+// done when the message was recieved and the date should be in the form **/**/**
+// Append the reminder to the existing list if it exists, if not create a new list and add it
 func (r *Reminder) Add(message string, date string) error {
 	var (
 		sb  strings.Builder
