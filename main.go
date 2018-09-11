@@ -201,7 +201,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 
 			s.ChannelMessageSend(m.ChannelID,
-				fmt.Sprintf("Daddy says to buy: %s %s %s %s", daddyResponse.Symbol,
+				fmt.Sprintf("%s %s %s %s", daddyResponse.Symbol,
 					daddyResponse.StrikePrice, daddyResponse.ExpirationDate, daddyResponse.Type))
 		} else if action, _ := regexp.MatchString("(?i)^!coin$", slice[0]); action {
 			ticker := strings.ToUpper(slice[1])
