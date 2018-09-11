@@ -25,6 +25,7 @@ import (
 type botConfig struct {
 	CoinAPIURL            string
 	InvalidCommandMessage string
+	WizdaddyURL           string
 }
 
 // Variables to initialize
@@ -116,7 +117,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, "pong!")
 	}
 
-	if match, _ := regexp.MatchString("![a-zA-Z]+ [a-zA-Z\"]+ [0-9/]*", m.Content); match {
+	if match, _ := regexp.MatchString("![a-zA-Z]+[ a-zA-Z\"]*[ 0-9/]*", m.Content); match {
 		slice := strings.Split(m.Content, " ")
 
 		if action, _ := regexp.MatchString("(?i)^!stock$", slice[0]); action {
@@ -186,6 +187,22 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				return
 			}
 			s.ChannelMessageSend(m.ChannelID, "Reminder Set!")
+		} else if action, _ := regexp.MatchString("(?i)^!wizdaddy", slice[0]); action {
+			resp, err := http.Get(config.WizdaddyURL)
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, "Daddy is down")
+				return
+			}
+
+			var daddyResponse datasource.WizdaddyResponse
+			if err = json.NewDecoder(resp.Body).Decode(&daddyResponse); err != nil {
+				s.ChannelMessageSend(m.ChannelID, err.Error())
+				return
+			}
+
+			s.ChannelMessageSend(m.ChannelID,
+				fmt.Sprintf("Daddy says to buy: %s %s %s %s", daddyResponse.Symbol,
+					daddyResponse.StrikePrice, daddyResponse.ExpirationDate, daddyResponse.Type))
 		} else if action, _ := regexp.MatchString("(?i)^!coin$", slice[0]); action {
 			ticker := strings.ToUpper(slice[1])
 			coinURL := config.CoinAPIURL + ticker + "&tsyms=USD"
