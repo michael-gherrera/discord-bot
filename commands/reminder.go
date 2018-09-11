@@ -26,7 +26,7 @@ func NewReminder(url string) Reminder {
 		storeurl = url
 	} else {
 		//Replace with the config from the charts PR
-		storeurl = "localhost:6380"
+		storeurl = "redis:6379"
 	}
 	client = redis.NewClient(&redis.Options{
 		Addr:     storeurl,
