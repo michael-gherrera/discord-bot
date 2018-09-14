@@ -9,3 +9,11 @@ services:
     volumes:
       - .:/go/src/discord-bot
     tty: true
+    depends_on:
+      - redis
+  redis:
+    image: redis:alpine
+    volumes:
+      - ./redis_data:/data
+    ports:
+      - 6380:6379

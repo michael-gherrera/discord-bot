@@ -2,12 +2,11 @@ module github.com/BryanSLam/discord-bot
 
 require (
 	github.com/bwmarrin/discordgo v0.18.0
-	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
-	github.com/gorilla/websocket v1.3.0 // indirect
-	github.com/jonwho/go-iex v0.0.0-20180901051812-21797dee8a9c
-	github.com/tkanos/gonfig v0.0.0-20180712192135-f9275a01b19e
-	github.com/wcharczuk/go-chart v2.0.1+incompatible
-	golang.org/x/crypto v0.0.0-20180830192347-182538f80094 // indirect
-	golang.org/x/image v0.0.0-20180708004352-c73c2afc3b81 // indirect
+	github.com/go-redis/redis v6.14.1+incompatible
+	github.com/gorilla/websocket v1.4.0 // indirect
+	github.com/jonwho/go-iex v0.0.0-20180906173559-e93aa28b941f
+	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
+	github.com/tkanos/gonfig v0.0.0-20180906171005-823c27c14873
+	golang.org/x/crypto v0.0.0-20180910181607-0e37d006457b // indirect
 	golang.org/x/text v0.3.0
 )

@@ -101,3 +101,16 @@ func FormatEarnings(earnings *iex.Earnings) string {
 
 	return fmtStr
 }
+
+func FormatFuzzySymbols(symbols []iex.SymbolDTO) string {
+	printer := message.NewPrinter(language.English)
+	fmtStr := "```\n"
+	fmtStr += "Could not find symbol you requested. Did you mean one of these symbols?\n\n"
+
+	for _, symbol := range symbols {
+		fmtStr += printer.Sprintf("%-5s %-20s\n", symbol.Symbol, symbol.Name)
+	}
+	fmtStr += "```\n"
+
+	return fmtStr
+}

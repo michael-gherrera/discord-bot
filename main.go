@@ -10,10 +10,13 @@ import (
 	"regexp"
 	"strings"
 	"syscall"
+	"time"
 
+	"github.com/BryanSLam/discord-bot/commands"
 	"github.com/BryanSLam/discord-bot/datasource"
 	"github.com/BryanSLam/discord-bot/util"
 	iex "github.com/jonwho/go-iex"
+	"github.com/robfig/cron"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/tkanos/gonfig"
@@ -22,13 +25,15 @@ import (
 type botConfig struct {
 	CoinAPIURL            string
 	InvalidCommandMessage string
+	WizdaddyURL           string
 }
 
 // Variables to initialize
 var (
-	token     string
-	config    botConfig
-	iexClient *iex.Client
+	token          string
+	config         botConfig
+	iexClient      *iex.Client
+	reminderClient commands.Reminder
 )
 
 func init() {
@@ -44,6 +49,9 @@ func init() {
 
 	// Initialize iexClient with new client
 	iexClient = iex.NewClient()
+
+	// Initalize new reminder goroutine
+	reminderClient = commands.NewReminder("")
 
 	// Use gonfig to fetch the config variables from config.json
 	err := gonfig.GetConf("config.json", &config)
@@ -71,6 +79,20 @@ func main() {
 		return
 	}
 
+	// 5 AM everyday Monday - Friday
+	go func() {
+		c := cron.New()
+		c.AddFunc("0 5 * * 1-5", func() {
+			fmt.Println("test")
+			err := reminderRoutine(dg)
+			if err != nil {
+				fmt.Println(err)
+			}
+		})
+		c.Start()
+
+	}()
+
 	// Wait here until CTRL-C or other term signal is received.
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
@@ -95,7 +117,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, "pong!")
 	}
 
-	if match, _ := regexp.MatchString("![a-zA-Z]+ [a-zA-Z]+", m.Content); match {
+	if match, _ := regexp.MatchString("![a-zA-Z]+[ a-zA-Z\"]*[ 0-9/]*", m.Content); match {
 		slice := strings.Split(m.Content, " ")
 
 		if action, _ := regexp.MatchString("(?i)^!stock$", slice[0]); action {
@@ -104,6 +126,19 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 			if err != nil {
 				s.ChannelMessageSend(m.ChannelID, err.Error())
+
+				rds, iexErr := iexClient.RefDataSymbols()
+				if iexErr != nil {
+					s.ChannelMessageSend(m.ChannelID, iexErr.Error())
+				}
+
+				fuzzySymbols := util.FuzzySearch(ticker, rds.Symbols)
+
+				if len(fuzzySymbols) > 0 {
+					fuzzySymbols = fuzzySymbols[:len(fuzzySymbols)%10]
+					outputJSON := util.FormatFuzzySymbols(fuzzySymbols)
+					s.ChannelMessageSend(m.ChannelID, outputJSON)
+				}
 				return
 			}
 
@@ -122,6 +157,52 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			outputJSON := util.FormatEarnings(earnings)
 
 			s.ChannelMessageSend(m.ChannelID, outputJSON)
+		} else if action, _ := regexp.MatchString("(?i)^!remindme$", slice[0]); action {
+			messageArr := strings.Split(m.Content, "\"")
+			if len(messageArr) != 3 {
+				s.ChannelMessageSend(m.ChannelID, "Reminder messages must be surrounded by quotes \"{message}\" ")
+				return
+			}
+			// We store the person who sent the message as well as the channel id into the redis cache so we know where and who to contact later
+			message := m.ChannelID + "~*" + m.Author.Mention() + ": " + messageArr[1]
+			date := slice[len(slice)-1]
+			match, _ := regexp.MatchString("(0?[1-9]|1[012])/(0?[1-9]|[12][0-9]|3[01])/(\\d\\d)", date)
+			if match == false {
+				s.ChannelMessageSend(m.ChannelID, "Invalid date given loser")
+				return
+			}
+
+			// Commenting out the date check for now, weird behavior where you get blocked for
+			// Setting a reminder for the next day
+
+			// dateCheck, _ := time.Parse("01/02/06", date)
+			// if time.Until(dateCheck) < 0 {
+			// 	s.ChannelMessageSend(m.ChannelID, "Date has already passed ya fuck")
+			// 	return
+			// }
+
+			err := reminderClient.Add(message, date)
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, err.Error())
+				return
+			}
+			s.ChannelMessageSend(m.ChannelID, "Reminder Set!")
+		} else if action, _ := regexp.MatchString("(?i)^!wizdaddy", slice[0]); action {
+			resp, err := http.Get(config.WizdaddyURL)
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, "Daddy is down")
+				return
+			}
+
+			var daddyResponse datasource.WizdaddyResponse
+			if err = json.NewDecoder(resp.Body).Decode(&daddyResponse); err != nil {
+				s.ChannelMessageSend(m.ChannelID, err.Error())
+				return
+			}
+
+			s.ChannelMessageSend(m.ChannelID,
+				fmt.Sprintf("%s %s %s %s", daddyResponse.Symbol,
+					daddyResponse.StrikePrice, daddyResponse.ExpirationDate, daddyResponse.Type))
 		} else if action, _ := regexp.MatchString("(?i)^!coin$", slice[0]); action {
 			ticker := strings.ToUpper(slice[1])
 			coinURL := config.CoinAPIURL + ticker + "&tsyms=USD"
@@ -146,4 +227,18 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSend(m.ChannelID, config.InvalidCommandMessage)
 		}
 	}
+}
+
+// Function run during the daily reminder check
+func reminderRoutine(s *discordgo.Session) error {
+	output, err := reminderClient.Get(time.Now().Format("01/02/06"))
+	if err != nil {
+		return err
+	}
+	for _, reminder := range output {
+		cacheEntry := strings.Split(reminder, "~*")
+		channel := cacheEntry[0]
+		s.ChannelMessageSend(channel, cacheEntry[1])
+	}
+	return nil
 }

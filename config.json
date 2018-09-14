@@ -1,5 +1,5 @@
 {
   "CoinAPIURL": "https://min-api.cryptocompare.com/data/pricemultifull?fsyms=",
-  "InvalidCommandMessage": "Invalid Command",
-  "DefaultChartFileName": "output.png"
+  "WizdaddyURL": "http://dev.wizdaddy.io/api/giveItToMeDaddy",
+  "InvalidCommandMessage": "Invalid Command"
 }
