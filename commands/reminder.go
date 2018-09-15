@@ -89,3 +89,36 @@ func (r *Reminder) Get(date string) ([]string, error) {
 	r.Client.Del(date)
 	return output, nil
 }
+
+// TODO:LEFTOVER CODE FROM REMINDER
+// update it so it can be used like other commands
+// } else if action, _ := regexp.MatchString("(?i)^!remindme$", slice[0]); action {
+//   messageArr := strings.Split(m.Content, "\"")
+//   if len(messageArr) != 3 {
+//     s.ChannelMessageSend(m.ChannelID, "Reminder messages must be surrounded by quotes \"{message}\" ")
+//     return
+//   }
+//   // We store the person who sent the message as well as the channel id into the redis cache so we know where and who to contact later
+//   message := m.ChannelID + "~*" + m.Author.Mention() + ": " + messageArr[1]
+//   date := slice[len(slice)-1]
+//   match, _ := regexp.MatchString("(0?[1-9]|1[012])/(0?[1-9]|[12][0-9]|3[01])/(\\d\\d)", date)
+//   if match == false {
+//     s.ChannelMessageSend(m.ChannelID, "Invalid date given loser")
+//     return
+//   }
+//
+//   // Commenting out the date check for now, weird behavior where you get blocked for
+//   // Setting a reminder for the next day
+//
+//   // dateCheck, _ := time.Parse("01/02/06", date)
+//   // if time.Until(dateCheck) < 0 {
+//   // 	s.ChannelMessageSend(m.ChannelID, "Date has already passed ya fuck")
+//   // 	return
+//   // }
+//
+//   err := reminderClient.Add(message, date)
+//   if err != nil {
+//     s.ChannelMessageSend(m.ChannelID, err.Error())
+//     return
+//   }
+//   s.ChannelMessageSend(m.ChannelID, "Reminder Set!")
