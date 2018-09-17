@@ -7,11 +7,9 @@ import (
 )
 
 type BotConfig struct {
-	StockAPIURL           string
 	CoinAPIURL            string
+	WizdaddyURL           string
 	InvalidCommandMessage string
-	InvalidSymbolMessage  string
-	DefaultChartFileName  string
 }
 
 var (

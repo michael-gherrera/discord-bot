@@ -13,19 +13,11 @@ import (
 	"github.com/robfig/cron"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/tkanos/gonfig"
 )
-
-type botConfig struct {
-	CoinAPIURL            string
-	InvalidCommandMessage string
-	WizdaddyURL           string
-}
 
 // Variables to initialize
 var (
 	token          string
-	config         botConfig
 	reminderClient commands.Reminder
 )
 
@@ -42,13 +34,6 @@ func init() {
 
 	// Initalize new reminder goroutine
 	reminderClient = commands.NewReminder("")
-
-	// Use gonfig to fetch the config variables from config.json
-	err := gonfig.GetConf("config.json", &config)
-	if err != nil {
-		fmt.Println("error fetching config values", err)
-		return
-	}
 }
 
 func main() {

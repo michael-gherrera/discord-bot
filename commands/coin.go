@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/BryanSLam/discord-bot/config"
 	"github.com/BryanSLam/discord-bot/datasource"
 	dg "github.com/bwmarrin/discordgo"
 )
@@ -12,7 +13,7 @@ import (
 func Coin(s *dg.Session, m *dg.MessageCreate) {
 	slice := strings.Split(m.Content, " ")
 	ticker := strings.ToUpper(slice[1])
-	coinURL := "https://min-api.cryptocompare.com/data/pricemultifull?fsyms=" + ticker + "&tsyms=USD"
+	coinURL := config.GetConfig().CoinAPIURL + ticker + "&tsyms=USD"
 
 	resp, err := http.Get(coinURL)
 

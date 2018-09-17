@@ -3,6 +3,7 @@ package commands
 import (
 	"regexp"
 
+	"github.com/BryanSLam/discord-bot/config"
 	dg "github.com/bwmarrin/discordgo"
 )
 
@@ -39,6 +40,6 @@ func Commander() func(s *dg.Session, m *dg.MessageCreate) {
 			return
 		}
 
-		s.ChannelMessageSend(m.ChannelID, "Invalid Command")
+		s.ChannelMessageSend(m.ChannelID, config.GetConfig().InvalidCommandMessage)
 	}
 }
