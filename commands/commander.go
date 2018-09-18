@@ -13,32 +13,34 @@ func Commander() func(s *dg.Session, m *dg.MessageCreate) {
 		if m.Author.ID == s.State.User.ID {
 			return
 		}
+		if match, _ := regexp.MatchString("![a-zA-Z]+[ a-zA-Z\"]*[ 0-9/]*", m.Content); match {
+			if match, _ := regexp.MatchString("!ping", m.Content); match {
+				Ping(s, m)
+				return
+			}
 
-		if match, _ := regexp.MatchString("!ping", m.Content); match {
-			Ping(s, m)
-			return
+			if match, _ := regexp.MatchString("(?i)^!stock [a-zA-Z]+$", m.Content); match {
+				Stock(s, m)
+				return
+			}
+
+			if match, _ := regexp.MatchString("(?i)^!er [a-zA-Z]+$", m.Content); match {
+				Er(s, m)
+				return
+			}
+
+			if match, _ := regexp.MatchString("(?i)^!wizdaddy$", m.Content); match {
+				Wizdaddy(s, m)
+				return
+			}
+
+			if match, _ := regexp.MatchString("(?i)^!coin [a-zA-Z]+$", m.Content); match {
+				Coin(s, m)
+				return
+			}
+
+			s.ChannelMessageSend(m.ChannelID, "Invalid Command")
+
 		}
-
-		if match, _ := regexp.MatchString("(?i)^!stock [a-zA-Z]+$", m.Content); match {
-			Stock(s, m)
-			return
-		}
-
-		if match, _ := regexp.MatchString("(?i)^!er [a-zA-Z]+$", m.Content); match {
-			Er(s, m)
-			return
-		}
-
-		if match, _ := regexp.MatchString("(?i)^!wizdaddy$", m.Content); match {
-			Wizdaddy(s, m)
-			return
-		}
-
-		if match, _ := regexp.MatchString("(?i)^!coin [a-zA-Z]+$", m.Content); match {
-			Coin(s, m)
-			return
-		}
-
-		s.ChannelMessageSend(m.ChannelID, "Invalid Command")
 	}
 }
