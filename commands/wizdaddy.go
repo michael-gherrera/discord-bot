@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/BryanSLam/discord-bot/config"
 	"github.com/BryanSLam/discord-bot/datasource"
 	dg "github.com/bwmarrin/discordgo"
 )
 
 func Wizdaddy(s *dg.Session, m *dg.MessageCreate) {
-	wizdaddyURL := "http://dev.wizdaddy.io/api/giveItToMeDaddy"
-
-	resp, err := http.Get(wizdaddyURL)
+	resp, err := http.Get(config.GetConfig().WizdaddyURL)
 	if err != nil {
 		s.ChannelMessageSend(m.ChannelID, "Daddy is down")
 		return
