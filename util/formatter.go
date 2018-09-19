@@ -20,6 +20,7 @@ func FormatQuote(quote *iex.Quote) string {
 		"Open",
 		"Close",
 		"Change % (1 day)",
+		"Delta",
 		"Volume",
 	}
 
@@ -32,6 +33,7 @@ func FormatQuote(quote *iex.Quote) string {
 		"Open":             fmt.Sprintf("%#v", quote.Open),
 		"Close":            fmt.Sprintf("%#v", quote.Close),
 		"Change % (1 day)": fmt.Sprintf("%#v", quote.ChangePercent) + " %",
+		"Delta":            fmt.Sprintf("%#v", Round(float64(quote.LatestPrice-quote.Open))),
 		"Volume":           fmt.Sprintf("%#v", quote.LatestVolume),
 	}
 
