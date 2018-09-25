@@ -65,7 +65,6 @@ func main() {
 			}
 		})
 		c.Start()
-
 	}()
 
 	// Wait here until CTRL-C or other term signal is received.

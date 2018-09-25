@@ -10,6 +10,7 @@ type BotConfig struct {
 	CoinAPIURL            string
 	WizdaddyURL           string
 	InvalidCommandMessage string
+	BotLogChannelID       string
 }
 
 var (
