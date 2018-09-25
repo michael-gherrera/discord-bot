@@ -1,5 +1,6 @@
 {
   "CoinAPIURL": "https://min-api.cryptocompare.com/data/pricemultifull?fsyms=",
   "WizdaddyURL": "http://dev.wizdaddy.io/api/giveItToMeDaddy",
-  "InvalidCommandMessage": "Invalid Command"
+  "InvalidCommandMessage": "Invalid Command",
+  "BotLogChannelID": "493921138657722368"
 }

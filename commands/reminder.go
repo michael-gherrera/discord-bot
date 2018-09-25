@@ -21,17 +21,17 @@ func NewReminder(url string) Reminder {
 		storeurl string
 		client   *redis.Client
 	)
-	//For mock testing
+	// For mock testing
 	if url != "" {
 		storeurl = url
 	} else {
-		//Replace with the config from the charts PR
+		// Replace with the config from the charts PR
 		storeurl = "redis:6379"
 	}
 	client = redis.NewClient(&redis.Options{
 		Addr:     storeurl,
-		Password: "", //no password set
-		DB:       0,  //Use default DB
+		Password: "", // No password set
+		DB:       0,  // Use default DB
 	})
 	return Reminder{
 		Client: client,
@@ -63,7 +63,7 @@ func (r *Reminder) Add(message string, date string) error {
 		return err
 	}
 
-	//Might need to add a buffer for the duration that the redis entry exists so we have time to get the value and output reminder
+	// Might need to add a buffer for the duration that the redis entry exists so we have time to get the value and output reminder
 	timeUntil := time.Until(untilDate) + 1
 	err = r.Client.Set(date, sb.String(), timeUntil).Err()
 	if err != nil {
@@ -85,10 +85,12 @@ func (r *Reminder) Get(date string) ([]string, error) {
 	}
 	output := strings.Split(messages, "::")
 
-	//Delete the entries in the redis cache after it's gotten in case the duration doesn't expire
+	// Delete the entries in the redis cache after it's gotten in case the duration doesn't expire
 	r.Client.Del(date)
 	return output, nil
 }
+
+// TODO: figure out how to add logger here without creating a new discord session
 
 // TODO:LEFTOVER CODE FROM REMINDER
 // update it so it can be used like other commands
