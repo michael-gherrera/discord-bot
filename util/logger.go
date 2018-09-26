@@ -1,6 +1,9 @@
 package util
 
 import (
+	"fmt"
+	"time"
+
 	dg "github.com/bwmarrin/discordgo"
 )
 
@@ -13,27 +16,38 @@ type Logger struct {
 // # BLUE
 // + YELLOW-GREEN
 // - RED
-
 func (l *Logger) Info(s string) {
-	fmtStr := "```md\n"
-	fmtStr += "# INFO\n\n"
-	fmtStr += "# " + s
-	fmtStr += "```\n"
+	timezone, _ := time.LoadLocation("America/Los_Angeles")
+	t := time.Now().In(timezone)
+	logDateTime := fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d",
+		t.Year(), t.Month(), t.Day(),
+		t.Hour(), t.Minute(), t.Second())
+
+	fmtStr := fmt.Sprintf("```md\n# [%s INFO] %s```", logDateTime, s)
+
 	l.Session.ChannelMessageSend(l.ChannelID, fmtStr)
 }
 
 func (l *Logger) Trace(s string) {
-	fmtStr := "```diff\n"
-	fmtStr += "+ TRACE\n\n"
-	fmtStr += "+ " + s
-	fmtStr += "```\n"
+	timezone, _ := time.LoadLocation("America/Los_Angeles")
+	t := time.Now().In(timezone)
+	logDateTime := fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d",
+		t.Year(), t.Month(), t.Day(),
+		t.Hour(), t.Minute(), t.Second())
+
+	fmtStr := fmt.Sprintf("```diff\n+ [%s TRACE] %s```", logDateTime, s)
+
 	l.Session.ChannelMessageSend(l.ChannelID, fmtStr)
 }
 
 func (l *Logger) Warn(s string) {
-	fmtStr := "```diff\n"
-	fmtStr += "- WARN\n\n"
-	fmtStr += "- " + s
-	fmtStr += "```\n"
+	timezone, _ := time.LoadLocation("America/Los_Angeles")
+	t := time.Now().In(timezone)
+	logDateTime := fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d",
+		t.Year(), t.Month(), t.Day(),
+		t.Hour(), t.Minute(), t.Second())
+
+	fmtStr := fmt.Sprintf("```diff\n- [%s WARN] %s```", logDateTime, s)
+
 	l.Session.ChannelMessageSend(l.ChannelID, fmtStr)
 }
