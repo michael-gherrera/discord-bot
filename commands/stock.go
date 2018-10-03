@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/BryanSLam/discord-bot/config"
@@ -34,6 +35,10 @@ func Stock(s *dg.Session, m *dg.MessageCreate) {
 			s.ChannelMessageSend(m.ChannelID, outputJSON)
 			return
 		}
+	}
+
+	if quote == nil {
+		logger.Trace(fmt.Sprintf("nil quote from ticker: %s", ticker))
 	}
 
 	message := util.FormatQuote(quote)
